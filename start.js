@@ -52,7 +52,7 @@ function refreshLeadDeveloperTile() {
 	if (null == tile) {
 		tile = document.createElement("div");
 		tile.className = "Bg-LeadDeveloper";
-		tile.innerHTML = '<h2>Lead Developer</h2><i class="fa fa-code"></i><div class="description">Toggle the CEO between Developer and Lead Developer.</div>';
+		tile.innerHTML = '<h2>Lead Developer</h2><i class="fa fa-code-fork"></i><div class="description">Lead Developers take care of merging components together into modules.</div>';
 		tile.addEventListener("mousedown", () => toggleCeoRole(rootScope));
 		container.appendChild(tile);
 	}
