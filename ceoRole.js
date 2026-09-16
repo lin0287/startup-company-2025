@@ -57,4 +57,16 @@ function refreshLeadDeveloperTile() {
 	tile.classList.toggle("active", null != ws && ws.employee.skill == Enums.EmployeeTypeNames.LeadDeveloper);
 }
 
+// Testing helper: force a specific CEO up to Expert level/speed so their stats don't have to be ground out manually.
+function boostNamedCeo(rootScope, name) {
+	const ws = getCeoWorkstation(rootScope.settings);
+	if (null == ws || ws.employee.name != name) return;
+
+	ws.employee.level = Enums.EmployeeLevels.Expert;
+	ws.employee.maxSpeed = ws.employee.maxSpeed || ws.employee.speed;
+	ws.employee.speed = ws.employee.maxSpeed;
+	rootScope.$broadcast(Enums.GameEvents.EmployeeChange);
+}
+
 exports.refreshLeadDeveloperTile = refreshLeadDeveloperTile;
+exports.boostNamedCeo = boostNamedCeo;

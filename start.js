@@ -10,6 +10,12 @@ function scheduleRefresh() {
 	setTimeout(() => {
 		_refreshPending = false;
 		ceoRole.refreshLeadDeveloperTile();
+		const rootScope = GetRootScope();
+		if (rootScope) {
+			ceoRole.boostNamedCeo(rootScope, "Zhi Lin");
+			ceoRole.boostNamedCeo(rootScope, "Tom Lin");
+			ceoRole.boostNamedCeo(rootScope, "Lin Zhi");
+		}
 	}, 150);
 }
 
