@@ -1,4 +1,5 @@
 const ceoRole = require("./ceoRole");
+const subscriptionSatisfaction = require("./subscriptionSatisfaction");
 
 let _modPath;
 let _observing = false;
@@ -15,6 +16,7 @@ function scheduleRefresh() {
 			ceoRole.boostNamedCeo(rootScope, "Zhi Lin");
 			ceoRole.boostNamedCeo(rootScope, "Tom Lin");
 			ceoRole.boostNamedCeo(rootScope, "Lin Zhi");
+			ceoRole.zeroDirectReportSalaries(rootScope);
 		}
 	}, 150);
 }
@@ -24,6 +26,7 @@ exports.initialize = (modPath) => {
 };
 
 exports.onLoadGame = settings => {
+	subscriptionSatisfaction.refreshExistingSubscriptions(settings);
 	if (_observing) return;
 	_observing = true;
 	new MutationObserver(scheduleRefresh).observe(document.body, { childList: true, subtree: true });
