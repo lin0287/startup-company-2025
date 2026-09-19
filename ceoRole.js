@@ -22,6 +22,12 @@ const SWITCHABLE_ROLES = [
 		title: "Manager",
 		cssClass: "fa-list-ol",
 		description: "Managers are used to control all kinds of employees. Managers give employees a speed bonus."
+	},
+	{
+		name: Enums.EmployeeTypeNames.HrManager,
+		title: "HR Manager",
+		cssClass: "fa-clock-o",
+		description: "Hire an HR Manager to be able to control working hours. An HR Manager will control multiple regular Managers."
 	}
 ];
 
@@ -139,6 +145,46 @@ function zeroDirectReportSalaries(rootScope) {
 	rootScope.$broadcast(Enums.GameEvents.EmployeeChange);
 }
 
+// While a full-access CEO is acting as HR Manager, every employee under a Manager the CEO supervises
+// (CEO -> Manager -> employee) is paid HR_MANAGER_REPORT_SALARY_MULTIPLIER of their normal salary. The
+// Managers themselves are the CEO's direct reports and are already zeroed by zeroDirectReportSalaries.
+// The original salary is stored on the employee (so it survives save/load) and put back as soon as
+// they stop qualifying: the CEO switches role, or the employee/their Manager is reassigned.
+const HR_MANAGER_REPORT_SALARY_MULTIPLIER = 0.5;
+
+function applyHrManagerSalaryCut(rootScope) {
+	const ws = getCeoWorkstation(rootScope.settings);
+	const active = null != ws && FULL_ROLE_ACCESS_CEO_NAMES.includes(ws.employee.name) && ws.employee.skill == Enums.EmployeeTypeNames.HrManager;
+
+	const employees = Helpers.GetAllEmployees(true, rootScope.settings);
+	const managerIds = active ? employees.filter(e => e.managerId == ws.employee.id).map(e => e.id) : [];
+	let changed = false;
+
+	for (const employee of employees) {
+		const cut = null != employee.ceoRoleModOriginalSalary;
+		// If the game changed the salary while it was cut (e.g. a raise), that value is the new base.
+		if (cut && employee.salary != employee.ceoRoleModAppliedSalary) employee.ceoRoleModOriginalSalary = employee.salary;
+
+		if (managerIds.includes(employee.managerId)) {
+			const original = cut ? employee.ceoRoleModOriginalSalary : employee.salary;
+			const reduced = Math.round(original * HR_MANAGER_REPORT_SALARY_MULTIPLIER);
+			if (cut && employee.salary == reduced) continue;
+			employee.ceoRoleModOriginalSalary = original;
+			employee.ceoRoleModAppliedSalary = reduced;
+			employee.salary = reduced;
+			changed = true;
+		} else if (cut) {
+			employee.salary = employee.ceoRoleModOriginalSalary;
+			delete employee.ceoRoleModOriginalSalary;
+			delete employee.ceoRoleModAppliedSalary;
+			changed = true;
+		}
+	}
+
+	if (changed) rootScope.$broadcast(Enums.GameEvents.EmployeeChange);
+}
+
 exports.refreshLeadDeveloperTile = refreshLeadDeveloperTile;
 exports.zeroDirectReportSalaries = zeroDirectReportSalaries;
+exports.applyHrManagerSalaryCut = applyHrManagerSalaryCut;
 exports.boostNamedCeo = boostNamedCeo;
