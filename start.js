@@ -17,6 +17,7 @@ function scheduleRefresh() {
 			ceoRole.boostNamedCeo(rootScope, "Tom Lin");
 			ceoRole.boostNamedCeo(rootScope, "Lin Zhi");
 			ceoRole.zeroDirectReportSalaries(rootScope);
+			ceoRole.applyHrManagerSalaryCut(rootScope);
 		}
 	}, 150);
 }
