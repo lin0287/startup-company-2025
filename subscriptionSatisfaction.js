@@ -1,7 +1,7 @@
 // Premium (paid) features on a website's Subscriptions feature lower its Satisfaction via
 // Helpers.CalculateSubscriptionDissatisfaction (3.2 per premium feature + 1.1 per $ of monthly price).
 // This mod scales that penalty down by SUBSCRIPTION_DISSATISFACTION_MULTIPLIER (half by default).
-const SUBSCRIPTION_DISSATISFACTION_MULTIPLIER = 0.5;
+const SUBSCRIPTION_DISSATISFACTION_MULTIPLIER = 0.25;
 
 // Same formula as the game's own (dest/game.min.js), with the multiplier applied before rounding
 // so we don't compound rounding error by halving an already-rounded value.

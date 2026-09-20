@@ -1,5 +1,7 @@
 const ceoRole = require("./ceoRole");
 const subscriptionSatisfaction = require("./subscriptionSatisfaction");
+const ddosProtectionSatisfaction = require("./ddosProtectionSatisfaction");
+const virtualCuLimit = require("./virtualCuLimit");
 
 let _modPath;
 let _observing = false;
@@ -11,6 +13,7 @@ function scheduleRefresh() {
 	setTimeout(() => {
 		_refreshPending = false;
 		ceoRole.refreshLeadDeveloperTile();
+		ceoRole.patchEmployeeSpeedCap();
 		const rootScope = GetRootScope();
 		if (rootScope) {
 			ceoRole.boostNamedCeo(rootScope, "Zhi Lin");
@@ -26,8 +29,11 @@ exports.initialize = (modPath) => {
 	_modPath = modPath;
 };
 
+exports.onBackgroundWorkerStart = virtualCuLimit.onBackgroundWorkerStart;
+
 exports.onLoadGame = settings => {
 	subscriptionSatisfaction.refreshExistingSubscriptions(settings);
+	ddosProtectionSatisfaction.refreshExistingDdosProtection(settings);
 	if (_observing) return;
 	_observing = true;
 	new MutationObserver(scheduleRefresh).observe(document.body, { childList: true, subtree: true });

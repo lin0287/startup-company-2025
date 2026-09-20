@@ -37,16 +37,19 @@ function getCeoWorkstation(settings) {
 
 // A CEO acting as Manager is still capped by Helpers.CalculateMaxInCharge, which only looks at
 // employee.level (3/5/8 for Beginner/Intermediate/Expert) regardless of role. Patch it so a CEO
-// currently set to the Manager role gets a much higher headcount; every other employee (including
-// regular Managers and HR Managers) keeps the game's original limit.
+// currently set to the Manager role gets a much higher headcount, and one set to the HR Manager role
+// can supervise up to CEO_HR_MANAGER_CAPACITY Managers; every other employee (including regular
+// Managers and HR Managers) keeps the game's original limit.
 const CEO_MANAGER_CAPACITY = 20;
+const CEO_HR_MANAGER_CAPACITY = 20;
 
 function patchManagerCapacity() {
 	if (Helpers.CalculateMaxInCharge.ceoRoleModPatched) return;
 	const original = Helpers.CalculateMaxInCharge;
 	Helpers.CalculateMaxInCharge = function(employee) {
-		if (employee && employee.employeeTypeName == Enums.EmployeeTypeNames.ChiefExecutiveOfficer && employee.skill == Enums.EmployeeTypeNames.Manager) {
-			return CEO_MANAGER_CAPACITY;
+		if (employee && employee.employeeTypeName == Enums.EmployeeTypeNames.ChiefExecutiveOfficer) {
+			if (employee.skill == Enums.EmployeeTypeNames.Manager) return CEO_MANAGER_CAPACITY;
+			if (employee.skill == Enums.EmployeeTypeNames.HrManager) return CEO_HR_MANAGER_CAPACITY;
 		}
 		return original(employee);
 	};
@@ -120,14 +123,53 @@ function refreshLeadDeveloperTile() {
 	}
 }
 
+// The base game clamps every employee's total speed (base + manager bonus + demands + mood) to
+// GAME_SPEED_CAP inside Game.Lifecycle._loadEmployeeSpeeds (game.min.js), which also limits what a
+// Manager/HR Manager CEO can pass down (their total / controlled employees). Full-access CEOs get
+// CEO_SPEED_CAP instead; everyone else keeps the game's cap.
+const GAME_SPEED_CAP = 1500;
+const CEO_SPEED_CAP = 12000;
+
+// Game.Lifecycle is recreated for every game session, so the patch is flagged on the function itself
+// rather than in module state. The body below is a copy of the game's _loadEmployeeSpeeds with only the
+// clamp changed; it has to be a copy because the clamp is inside the function and the reports' manager
+// bonus is derived from the (clamped) CEO total during the same pass.
+function patchEmployeeSpeedCap() {
+	const lifecycle = Game.Lifecycle;
+	if (null == lifecycle || lifecycle._loadEmployeeSpeeds.ceoRoleModPatched) return;
+
+	lifecycle._loadEmployeeSpeeds = function() {
+		const rootScope = GetRootScope();
+		for (const employee of Helpers.GetAllEmployees(true)) {
+			const ws = rootScope.settings.office.workstations.find(w => null != w.employee && w.employee.id == employee.id);
+			const speed = {};
+			speed.baseSpeed = Math.round(employee.speed);
+			speed.moodPenalty = Math.round(GetMoodPenalty(employee));
+			speed.managerBonus = GetManagerBonus(employee);
+			speed.ceoBonus = null != rootScope.settings.ceo && "TheManager" == rootScope.settings.ceo.bonus ? 10 : 0;
+			const fulfilledDemands = employee.demands
+				.map(demand => Helpers.GetDemandInfo(demand, employee, null != ws ? ws.deskName : null))
+				.filter(info => info.fulfilled);
+			speed.demandBonus = Math.round(_.sum(fulfilledDemands.map(info => info.bonus)));
+
+			const total = speed.baseSpeed + (speed.managerBonus.isAtWork ? speed.managerBonus.speed : 0) + speed.demandBonus + speed.ceoBonus - -speed.moodPenalty;
+			const uncapped = employee.employeeTypeName == Enums.EmployeeTypeNames.ChiefExecutiveOfficer && FULL_ROLE_ACCESS_CEO_NAMES.includes(employee.name);
+			speed.total = _.clamp(total, 0, uncapped ? CEO_SPEED_CAP : GAME_SPEED_CAP);
+			lifecycle._employeeSpeeds[employee.id] = speed;
+		}
+	};
+	lifecycle._loadEmployeeSpeeds.ceoRoleModPatched = true;
+	lifecycle._loadEmployeeSpeeds();
+}
+
 // Testing helper: force a specific CEO up to Expert level/speed so their stats don't have to be ground out manually.
 function boostNamedCeo(rootScope, name) {
 	const ws = getCeoWorkstation(rootScope.settings);
 	if (null == ws || ws.employee.name != name) return;
 
 	ws.employee.level = Enums.EmployeeLevels.Expert;
-	ws.employee.maxSpeed = 1500;
-	ws.employee.speed = 1500;
+	ws.employee.maxSpeed = CEO_SPEED_CAP;
+	ws.employee.speed = CEO_SPEED_CAP;
 	rootScope.$broadcast(Enums.GameEvents.EmployeeChange);
 }
 
@@ -188,3 +230,4 @@ exports.refreshLeadDeveloperTile = refreshLeadDeveloperTile;
 exports.zeroDirectReportSalaries = zeroDirectReportSalaries;
 exports.applyHrManagerSalaryCut = applyHrManagerSalaryCut;
 exports.boostNamedCeo = boostNamedCeo;
+exports.patchEmployeeSpeedCap = patchEmployeeSpeedCap;
