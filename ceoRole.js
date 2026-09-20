@@ -40,8 +40,8 @@ function getCeoWorkstation(settings) {
 // currently set to the Manager role gets a much higher headcount, and one set to the HR Manager role
 // can supervise up to CEO_HR_MANAGER_CAPACITY Managers; every other employee (including regular
 // Managers and HR Managers) keeps the game's original limit.
-const CEO_MANAGER_CAPACITY = 20;
-const CEO_HR_MANAGER_CAPACITY = 20;
+const CEO_MANAGER_CAPACITY = 30;
+const CEO_HR_MANAGER_CAPACITY = 30;
 
 function patchManagerCapacity() {
 	if (Helpers.CalculateMaxInCharge.ceoRoleModPatched) return;
@@ -128,7 +128,7 @@ function refreshLeadDeveloperTile() {
 // Manager/HR Manager CEO can pass down (their total / controlled employees). Full-access CEOs get
 // CEO_SPEED_CAP instead; everyone else keeps the game's cap.
 const GAME_SPEED_CAP = 1500;
-const CEO_SPEED_CAP = 12000;
+const CEO_SPEED_CAP = 15000;
 
 // Game.Lifecycle is recreated for every game session, so the patch is flagged on the function itself
 // rather than in module state. The body below is a copy of the game's _loadEmployeeSpeeds with only the

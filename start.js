@@ -2,6 +2,7 @@ const ceoRole = require("./ceoRole");
 const subscriptionSatisfaction = require("./subscriptionSatisfaction");
 const ddosProtectionSatisfaction = require("./ddosProtectionSatisfaction");
 const virtualCuLimit = require("./virtualCuLimit");
+const ddosCuOverhead = require("./ddosCuOverhead");
 
 let _modPath;
 let _observing = false;
@@ -29,7 +30,11 @@ exports.initialize = (modPath) => {
 	_modPath = modPath;
 };
 
-exports.onBackgroundWorkerStart = virtualCuLimit.onBackgroundWorkerStart;
+// The game allows one onBackgroundWorkerStart per mod and runs its toString() source in the worker, so bundle each
+// module's self-contained worker patch into a single function whose source calls them all.
+const workerPatches = [virtualCuLimit.onBackgroundWorkerStart, ddosCuOverhead.onBackgroundWorkerStart];
+exports.onBackgroundWorkerStart = () => {};
+exports.onBackgroundWorkerStart.toString = () => `() => {${workerPatches.map(patch => `(${patch})();`).join("")}}`;
 
 exports.onLoadGame = settings => {
 	subscriptionSatisfaction.refreshExistingSubscriptions(settings);
