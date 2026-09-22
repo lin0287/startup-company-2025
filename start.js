@@ -3,6 +3,7 @@ const subscriptionSatisfaction = require("./subscriptionSatisfaction");
 const ddosProtectionSatisfaction = require("./ddosProtectionSatisfaction");
 const virtualCuLimit = require("./virtualCuLimit");
 const ddosCuOverhead = require("./ddosCuOverhead");
+require("./headquarterFloor");
 
 let _modPath;
 let _observing = false;

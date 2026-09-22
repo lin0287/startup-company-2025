@@ -30,8 +30,15 @@ const patchDdosCuOverhead = () => {
 	// GetProductStats reads Configuration.DDOS_ATTACK_MULTIPLIER only at its CU line, and synchronously, so swapping the
 	// constant for the effective multiplier around the call reuses all of the game's own state/response-time logic.
 	Helpers.GetProductStats = (product, progress, instances, availableCu) => {
-		if (!progress.activeDdos) return gameGetProductStats(product, progress, instances, availableCu);
+		const stats = progress.activeDdos ? getDdosProductStats(product, progress, instances, availableCu) : gameGetProductStats(product, progress, instances, availableCu);
 
+		// The game rounds the CU before applying the multiplier and stores peakCu unrounded, so a fractional multiplier
+		// leaves fractional peak CU (also cleans up any already saved). The max with the (whole) stored peak stays whole.
+		stats.performance.peakCu = Math.round(stats.performance.peakCu);
+		return stats;
+	};
+
+	const getDdosProductStats = (product, progress, instances, availableCu) => {
 		const protection = instances.find(instance => instance.featureName == FeatureNames.DdosProtection);
 		const unmitigated = null == protection ? 1 : Math.max(1 - protection.efficiency / 100, RESIDUAL_CU_OVERHEAD);
 		const gameMultiplier = Configuration.DDOS_ATTACK_MULTIPLIER;
