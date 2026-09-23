@@ -3,6 +3,7 @@ const subscriptionSatisfaction = require("./subscriptionSatisfaction");
 const ddosProtectionSatisfaction = require("./ddosProtectionSatisfaction");
 const virtualCuLimit = require("./virtualCuLimit");
 const ddosCuOverhead = require("./ddosCuOverhead");
+const hostingOverageBilling = require("./hostingOverageBilling");
 require("./headquarterFloor");
 
 let _modPath;
@@ -33,7 +34,7 @@ exports.initialize = (modPath) => {
 
 // The game allows one onBackgroundWorkerStart per mod and runs its toString() source in the worker, so bundle each
 // module's self-contained worker patch into a single function whose source calls them all.
-const workerPatches = [virtualCuLimit.onBackgroundWorkerStart, ddosCuOverhead.onBackgroundWorkerStart];
+const workerPatches = [virtualCuLimit.onBackgroundWorkerStart, ddosCuOverhead.onBackgroundWorkerStart, hostingOverageBilling.onBackgroundWorkerStart];
 exports.onBackgroundWorkerStart = () => {};
 exports.onBackgroundWorkerStart.toString = () => `() => {${workerPatches.map(patch => `(${patch})();`).join("")}}`;
 
