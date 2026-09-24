@@ -28,6 +28,12 @@ const SWITCHABLE_ROLES = [
 		title: "HR Manager",
 		cssClass: "fa-clock-o",
 		description: "Hire an HR Manager to be able to control working hours. An HR Manager will control multiple regular Managers."
+	},
+	{
+		name: Enums.EmployeeTypeNames.HrDirector,
+		title: "HR Director",
+		cssClass: "fa-briefcase",
+		description: "Hire an HR Director to supervise multiple HR Managers, extending their working-hours control to every Manager underneath them."
 	}
 ];
 
@@ -42,6 +48,7 @@ function getCeoWorkstation(settings) {
 // Managers and HR Managers) keeps the game's original limit.
 const CEO_MANAGER_CAPACITY = 50;
 const CEO_HR_MANAGER_CAPACITY = 50;
+const CEO_HR_DIRECTOR_CAPACITY = 10;
 
 function patchManagerCapacity() {
 	if (Helpers.CalculateMaxInCharge.ceoRoleModPatched) return;
@@ -50,6 +57,7 @@ function patchManagerCapacity() {
 		if (employee && employee.employeeTypeName == Enums.EmployeeTypeNames.ChiefExecutiveOfficer) {
 			if (employee.skill == Enums.EmployeeTypeNames.Manager) return CEO_MANAGER_CAPACITY;
 			if (employee.skill == Enums.EmployeeTypeNames.HrManager) return CEO_HR_MANAGER_CAPACITY;
+			if (employee.skill == Enums.EmployeeTypeNames.HrDirector) return CEO_HR_DIRECTOR_CAPACITY;
 		}
 		return original(employee);
 	};

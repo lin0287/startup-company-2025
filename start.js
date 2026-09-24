@@ -1,3 +1,4 @@
+const hrDirectorRole = require("./hrDirectorRole");
 const ceoRole = require("./ceoRole");
 const subscriptionSatisfaction = require("./subscriptionSatisfaction");
 const ddosProtectionSatisfaction = require("./ddosProtectionSatisfaction");
@@ -17,6 +18,7 @@ function scheduleRefresh() {
 		_refreshPending = false;
 		ceoRole.refreshLeadDeveloperTile();
 		ceoRole.patchEmployeeSpeedCap();
+		hrDirectorRole.refreshWorkstationPanels();
 		const rootScope = GetRootScope();
 		if (rootScope) {
 			ceoRole.boostNamedCeo(rootScope, "Zhi Lin");
@@ -24,6 +26,7 @@ function scheduleRefresh() {
 			ceoRole.boostNamedCeo(rootScope, "Lin Zhi");
 			ceoRole.zeroDirectReportSalaries(rootScope);
 			ceoRole.applyHrManagerSalaryCut(rootScope);
+			hrDirectorRole.grantHrDirectorResearch(rootScope);
 		}
 	}, 150);
 }
