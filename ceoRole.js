@@ -48,7 +48,7 @@ function getCeoWorkstation(settings) {
 // Managers and HR Managers) keeps the game's original limit.
 const CEO_MANAGER_CAPACITY = 50;
 const CEO_HR_MANAGER_CAPACITY = 50;
-const CEO_HR_DIRECTOR_CAPACITY = 10;
+const CEO_HR_DIRECTOR_CAPACITY = 20;
 
 function patchManagerCapacity() {
 	if (Helpers.CalculateMaxInCharge.ceoRoleModPatched) return;
