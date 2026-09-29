@@ -4,7 +4,8 @@
 // DDOS_DISSATISFACTION_MULTIPLIER (half by default).
 const DDOS_DISSATISFACTION_MULTIPLIER = 0.5;
 
-// The game reuses that one helper for the AdBlock Obfuscator too, so only DDoS Protection instances are scaled.
+// The game reuses that one helper for AdBlock Obfuscator too (see adblockObfuscatorSatisfaction.js), so only DDoS
+// Protection instances are scaled here.
 // The game's result is already clamped to a minimum of 1 and ceil() keeps it there, so the penalty never drops to 0.
 function patchDdosDissatisfaction() {
 	const gameCalculation = Helpers.CalculateAdblockObfuscatorDissatisfaction;

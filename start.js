@@ -2,6 +2,7 @@ const hrDirectorRole = require("./hrDirectorRole");
 const ceoRole = require("./ceoRole");
 const subscriptionSatisfaction = require("./subscriptionSatisfaction");
 const ddosProtectionSatisfaction = require("./ddosProtectionSatisfaction");
+const adblockObfuscatorSatisfaction = require("./adblockObfuscatorSatisfaction");
 const virtualCuLimit = require("./virtualCuLimit");
 const ddosCuOverhead = require("./ddosCuOverhead");
 const hostingOverageBilling = require("./hostingOverageBilling");
@@ -45,6 +46,7 @@ exports.onBackgroundWorkerStart.toString = () => `() => {${workerPatches.map(pat
 exports.onLoadGame = settings => {
 	subscriptionSatisfaction.refreshExistingSubscriptions(settings);
 	ddosProtectionSatisfaction.refreshExistingDdosProtection(settings);
+	adblockObfuscatorSatisfaction.refreshExistingAdblockObfuscator(settings);
 	if (_observing) return;
 	_observing = true;
 	new MutationObserver(scheduleRefresh).observe(document.body, { childList: true, subtree: true });
