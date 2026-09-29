@@ -6,6 +6,7 @@ const virtualCuLimit = require("./virtualCuLimit");
 const ddosCuOverhead = require("./ddosCuOverhead");
 const hostingOverageBilling = require("./hostingOverageBilling");
 require("./headquarterFloor");
+require("./socialMediaFeatures");
 
 let _modPath;
 let _observing = false;
