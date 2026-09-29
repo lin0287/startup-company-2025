@@ -6,6 +6,7 @@ const adblockObfuscatorSatisfaction = require("./adblockObfuscatorSatisfaction")
 const virtualCuLimit = require("./virtualCuLimit");
 const ddosCuOverhead = require("./ddosCuOverhead");
 const hostingOverageBilling = require("./hostingOverageBilling");
+const megaVirtualServer = require("./megaVirtualServer");
 require("./headquarterFloor");
 require("./socialMediaFeatures");
 
@@ -18,6 +19,7 @@ function scheduleRefresh() {
 	_refreshPending = true;
 	setTimeout(() => {
 		_refreshPending = false;
+		megaVirtualServer.refreshLanguageStrings();
 		ceoRole.refreshLeadDeveloperTile();
 		ceoRole.patchEmployeeSpeedCap();
 		hrDirectorRole.refreshWorkstationPanels();
@@ -39,7 +41,7 @@ exports.initialize = (modPath) => {
 
 // The game allows one onBackgroundWorkerStart per mod and runs its toString() source in the worker, so bundle each
 // module's self-contained worker patch into a single function whose source calls them all.
-const workerPatches = [virtualCuLimit.onBackgroundWorkerStart, ddosCuOverhead.onBackgroundWorkerStart, hostingOverageBilling.onBackgroundWorkerStart];
+const workerPatches = [virtualCuLimit.onBackgroundWorkerStart, ddosCuOverhead.onBackgroundWorkerStart, hostingOverageBilling.onBackgroundWorkerStart, megaVirtualServer.onBackgroundWorkerStart];
 exports.onBackgroundWorkerStart = () => {};
 exports.onBackgroundWorkerStart.toString = () => `() => {${workerPatches.map(patch => `(${patch})();`).join("")}}`;
 
