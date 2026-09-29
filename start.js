@@ -7,6 +7,7 @@ const virtualCuLimit = require("./virtualCuLimit");
 const ddosCuOverhead = require("./ddosCuOverhead");
 const hostingOverageBilling = require("./hostingOverageBilling");
 const megaVirtualServer = require("./megaVirtualServer");
+require("./serverInstanceRefund");
 require("./headquarterFloor");
 require("./socialMediaFeatures");
 

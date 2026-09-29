@@ -1,7 +1,13 @@
 // FastClouds' virtual server catalogue tops out at "Ultra" (ServerNames.LargeVirtualServer, 15,000 CU/day -
 // see the ServerNames/Servers data in dest/game.min.js). This adds a "Mega" tier above it with 10x Ultra's CU.
-// Price and hardware requirements scale by the same 10x factor, matching how the game's own (deprecated)
-// cluster tiers scale off LargeVirtualServer - e.g. LargeVirtualCluster is exactly 48x Ultra's CU and price.
+//
+// Requirements get a genuine economy-of-scale discount, grounded in the game's own (deprecated) cluster
+// tiers: compared to Ultra, MediumVirtualCluster (the closest tier to our 10x by CU, at 12x) needs only 10x
+// NetworkComponent/VirtualHardware/OperatingSystem (a 5/6 ratio) while its Firewall requirement stays exactly
+// proportional to CU. We reuse that same 5/6 ratio here. pricePerDay, on the other hand, is exactly linear
+// with CU in every base-game tier (always 0.06/CU/day, no bulk discount) - so on top of that we apply a
+// deliberate extra discount to make the Mega tier a genuinely better $/CU deal, which the base game never
+// offers at any tier.
 //
 // Mods run require()'d directly into the same JS realm dest/game.min.js declared its globals in (see
 // start.js), so the tier is registered by mutating the game's own already-loaded ServerNames/Servers data -
@@ -11,6 +17,9 @@
 // this needs to run both at require() time and via onBackgroundWorkerStart.
 const MEGA_VIRTUAL_SERVER = "MegaVirtualServer";
 const SCALE = 10;
+const COMPONENT_ECONOMY_OF_SCALE = 5 / 6;
+const LINEAR_REQUIREMENTS = ["Firewall"];
+const PRICE_DISCOUNT = 0.15;
 
 function registerMegaVirtualServer() {
 	if (ServerNames.MegaVirtualServer) return;
@@ -19,7 +28,8 @@ function registerMegaVirtualServer() {
 	const ultra = Servers.find(s => s.name == ServerNames.LargeVirtualServer);
 	const requirements = {};
 	Object.keys(ultra.requirements).forEach(component => {
-		requirements[component] = ultra.requirements[component] * SCALE;
+		const discount = LINEAR_REQUIREMENTS.includes(component) ? 1 : COMPONENT_ECONOMY_OF_SCALE;
+		requirements[component] = Math.round(ultra.requirements[component] * SCALE * discount);
 	});
 
 	Servers.push({
@@ -27,7 +37,7 @@ function registerMegaVirtualServer() {
 		employeeLevel: ultra.employeeLevel,
 		requirements,
 		computeUnit: ultra.computeUnit * SCALE,
-		pricePerDay: ultra.pricePerDay * SCALE
+		pricePerDay: Math.round(ultra.pricePerDay * SCALE * (1 - PRICE_DISCOUNT))
 	});
 }
 registerMegaVirtualServer();
